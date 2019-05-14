@@ -1,0 +1,8 @@
+,Loc_ID,Type,Value,Entry_UID_x,Lat_Y,Long_X,Nickname,Fullname,Entry_UID_y
+0,3,sufi_lodges_contained,17,42,39.77691,64.41315,Bukhara,Bukhāra (city),9001
+1,47,sufi_lodges_contained,8,102,39.502778,63.85555600000001,Qarakol,QarākūlQorako‘l,313
+2,48,sufi_lodges_contained,12,3301,40.033333,64.516667,Wabkand,WābkandKāmāt,314
+3,49,sufi_lodges_contained,8,3311,40.05,64.53333,Pirmast,Pīrmast,1738
+4,51,sufi_lodges_contained,12,3317,39.933333000000005,64.383333,Ramitan,RāmītanSāmjan,1740
+5,50,sufi_lodges_contained,9,3321,40.116667,64.5,Shafirkam,ShāfirkāmWardānzahShāpūrkām,1739
+6,409,sufi_lodges_contained,12,3326,40.084444,65.37916700000001,Karmina,Karmina (Province),3327

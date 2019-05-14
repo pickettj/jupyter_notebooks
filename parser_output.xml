@@ -1,0 +1,16 @@
+<?xml-model href="../../../../Documents/digital_humanities/digital_eurasia/schemas/schema_coding_primary_texts_2.0.rnc" type="application/relax-ng-compact-syntax"?>
+<document serial = "626">
+	
+	
+	<div> 
+	
+	<!-- (First glance) Statement that ulama are in agreement that the vocal Zikr of Ahmad Yasawi is legitimate, based on a gathering of them. Seal marks this from 1284/1866. -->
+	
+		<lb/>درینمسئله که جماعۀ از مسلمین که ممتمسکین بسلسلۀ شریفه حضرت سلطان العافین قدوة المسلاکین برهان الشریفه و الحق و الدین قطب
+		<lb/>الاولیاء و صفوة الاصفیاء <flag>اعنی</flag> حضرت خواجه احمد قدس الله تعالی روحه العزیز بطهارت  <flag>بادم</flag> تمام در مساجد و زوایای در مکان طاهر جمع شده
+		<lb/>از سر صمیمی صدق و ا اخلاص بنیت صحیحه خالیاً عن الریا  و الاعواض بجهت طالبین و تعمیلی و آداب <flag>مسترسدین</flag> و ترغیب سائر ایشان علی وجه الاعتبار حثا
+		<lb/>علی طاعة الله و ابتغاء علی مرضات الله که از جملۀ اعظم اسماء الله هوست و بفارسیه ذکر آرّه میگویند بر سبیل چهره علانیه  بر ان استغال مینمایند کما طریقه
+		<lb/>شرعاً و دلرا نرم گردانند زنگ و داغ و حجابهای آنرا بر دارد و وساوس دیو از حواسی سینه بعد سازد و سینه را <flag>انسراحی</flag> و دلرا انفتاحی و غافلانرا انتباهی
+		<lb/>
+	
+</document>

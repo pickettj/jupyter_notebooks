@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="../../schemas/schema_coding_primary_texts_2.0.rnc" type="application/relax-ng-compact-syntax"?>
+
+<document>
+
+    <metadata>
+        <unique_id>ser561</unique_id>
+    </metadata>
+    <body>
+        <pg folio="13a"/>
+        <div type="marginalia">
+            <!-- Top Marginalia -->
+            <ts type="inscriptio"/>
+            <lb/>جنابعالیمولایم سلمه الله متعالی
+            <lb/>جناب مرحمت و شفقت پناهی وزارتپناه مهربانی پروانچی حفظه الباری
+            <lb/>دام دولته
+            <lb/> معروض بر ضمیر منیر مهر تنویر خجسته مظاهر
+            <flag type="unclear">سیرات</flag>
+             تخمیر </div>
+        <div type="section">
+            <ts type="salutatio"/>
+            <lb/> عالیجاه رفیع جایگاه امیر الامراء
+            <flag type="unclear">انتظام</flag>
+             محیت و مؤدت ارتسام اعنی
+            <lb/> مستغنی عن تعریف و توصیف را بمعرض
+            <flag type="unclear">قبول</flag>
+             چنین رسانیده
+            <lb/> میشود که الحمد و المنه مجاریً احوال بکرم و دولت
+            <flag type="unclear">بخیر</flag>
+             بوده
+            <lb/> سلامتیً ذات اشراف همایونی آبرومندی مطلوب مستدعااست
+            <lb/>
+            <ts type="narratio"/> نهفته و خفی مباد که والا جاها چنانجه درینآوان خرم
+            <lb/> نشان و
+            <flag type="unclear"/>
+             از برای غلطانیده آمده
+            <flag type="unclear"/>
+            <lb/> بدریا بودهً
+            <flag type="unclear">تدمانها رمیه</flag>
+            <!-- NM: Band'ho - maybe it means to put down the ropes on the river. -->
+        </div>
+        <div type="section">
+            <!-- Right diagonal column -->
+            <lb/> نوازش
+            <flag type="unclear">پرور</flag>
+            <lb/> ارسالداشته بوده در بهترین
+            <lb/> زمان آمده رسیده بمطالعه پیوسته از مضامین بلاغت
+            <flag type="unclear">آیین</flag>
+            <lb/> او خورسندی بحصول پیوسته گردید
+            <ts type="narratio"/> امیدگاها احوال اینخدمت کار بجنابشان
+            <lb/> کما ینبغی معلوم میباشد از بیگاه اینجانب یکرم آلهی اندک تب و
+            <flag type="meaning">فراشاط ناک</flag>
+             شده در طبعیت در طبيعت چیزی
+            <flag type="meaning">لاحظىدر</flag>
+             طبيعت چیزی لاحظى
+            <lb/> پیدا شد از اینوجه بقاضی و املاکداران تومان خط کرده آدم خود را همراه
+            <flag type="unclear"/>
+             روانه نمودم دیگر اینکه
+            <lb/> مهربان پناها مبارکنامهً فقرایان بجنابشان منظور شده <lang type="tajik">گیست</lang>
+            بمثل آن یک
+            <term type="genre">مبارکنامهً</term>
+            <term type="injunction">حکم</term>
+             عرض کرده گرفته طیاری نموده مانند
+            <lb/> بهتر است گفته از روی نادانی انمعنی صلاح می افتیده باشد گفته آگاهی نموده فرستادم
+            دیگر از دولت عالی بخاطر جمعی بوده
+            <flag type="unclear">دعا آب</flag>
+             را
+            <lb/> بفقرایان نوبت دار کما کان رسانیده بذاتعای دعا گرفته استاده ایم ازینوجه
+            خدمتکارانشان خوب مذمت کرده استاده اند
+            <lb/> فقر همه وقت بدعا
+            <flag type="unclear">یار</flag>
+            <flag type="unclear">نیز</flag>
+             از دعای مقرون الاجابت اولا ذاتعالی طفیلی امیدوارم السلام
+            <flag type="unclear"/>
+        </div>
+
+    </body>
+
+</document>

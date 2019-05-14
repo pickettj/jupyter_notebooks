@@ -1,0 +1,895 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Libraries"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import nltk, os, glob, re, bs4"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Corpus Globbing Section"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Corpus Build: Machine-Readable Central Asian Texts\n",
+    "Corpus of complete texts edited by others composed in early modern Transoxania."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "trans_corpus_files = glob.glob(r'/Users/Enkidu/Box Sync/Notes/Digital Humanities/\\\n",
+    "Corpora/machine_readable_persian_transoxania_texts/*.txt')\n",
+    "\n",
+    "trans_corpus = {}\n",
+    "for longname in trans_corpus_files:\n",
+    "    with open(longname) as f:\n",
+    "        txt = f.read()\n",
+    "    start = os.path.basename(longname)\n",
+    "    short = os.path.splitext(start)\n",
+    "    trans_corpus[short[0]] = txt\n",
+    "    \n",
+    "    \n",
+    "#trans_corpus['samarat']\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Corpus Build: Manuscript Notes\n",
+    "Corpus based on partially transcribed manuscripts from early modern Transoxania."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "nmr_files = glob.glob(r'/Users/Enkidu/Box Sync/Notes/\\\n",
+    "Primary Sources/non-machine-readable_notes/bactriana_notes/*.txt')\n",
+    "\n",
+    "raw_notes_corpus = {}\n",
+    "for longname in nmr_files:\n",
+    "    f = open(longname)\n",
+    "    txt = f.read()\n",
+    "    f.close()\n",
+    "    start = os.path.basename(longname)\n",
+    "    short = os.path.splitext(start)\n",
+    "    raw_notes_corpus[short[0]] = txt\n",
+    "\n",
+    "#Adding in MarkDown stage files, not yet converted to XML    \n",
+    "\n",
+    "#QUESTION: How to add \"or md or txt\"? CHANGE extenstion\n",
+    "\n",
+    "md_files = glob.glob(r'/Users/Enkidu/Box Sync/Notes/\\\n",
+    "Primary Sources/transcription_markdown_drafting_stage1/document_conversion_backlog/pre-parser_backlog/**/*.txt', recursive=True)\n",
+    "\n",
+    "md_notes_corpus = {}\n",
+    "for longname in md_files:\n",
+    "    f = open(longname)\n",
+    "    txt = f.read()\n",
+    "    f.close()\n",
+    "    start = os.path.basename(longname)\n",
+    "    short = os.path.splitext(start)\n",
+    "    md_notes_corpus[short[0]] = txt\n",
+    "\n",
+    "\n",
+    "\n",
+    "\n",
+    "    \n",
+    "#raw_notes_corpus.keys()\n",
+    "#md_notes_corpus.keys()\n",
+    "#md_notes_corpus['apsa_524']\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Corpus Build: XML Documents\n",
+    "Corpus based on transcribed XML documents early modern Transoxania."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Python 3.5 and newer supports recursive **/ functionality, i.e. cycle through all subdirectories.\n",
+    "\n",
+    "xml_files = glob.glob(r'/Users/Enkidu/Box Sync/Notes/Primary Sources/xml_notes_stage2/**/*.xml', recursive=True)\n",
+    "\n",
+    "\n",
+    "# For-loop through file names and build a dictionary of key (filename): value (text content)\n",
+    "\n",
+    "xml_corpus = {}\n",
+    "for longname in xml_files:\n",
+    "    f = open(longname)\n",
+    "    txt = f.read()\n",
+    "    f.close()\n",
+    "    start = os.path.basename(longname)\n",
+    "    short = os.path.splitext(start)\n",
+    "    xml_corpus[short[0]] = txt\n",
+    "\n",
+    "#xml_corpus['TsGARUz_i126_1_601_6_ser187']\n",
+    "#xml_corpus.keys()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "\n",
+    "### Defunct method: [creating an NLTK corpus](http://www.nltk.org/book/ch02.html#loading-your-own-corpus)\n",
+    "\n",
+    "```python\n",
+    "\n",
+    "os.chdir('/Users/Enkidu/Documents/digital_humanities/jupyter_notebooks')\n",
+    "corpus_root = 'machine_readable_persian_transoxania_texts'\n",
+    "turkestan_corpus = PlaintextCorpusReader(corpus_root, '.*')\n",
+    "turkestan_corpus.fileids()\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Cleaning"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This function replaces previous method (\"Not sure if you've seen dictionary comprehension before, but that there is it! Very useful. Saves you from having to do the explicit define dict then for loop rigamarole, and makes things more concise and readable.\" Previous method saved for posterity:\n",
+    "\n",
+    "```python\n",
+    "clean_edited_i = {}\n",
+    "for fn in raw_edited_corpus:\n",
+    "    clean_edited_i[fn] = re.sub(r'ي', 'ی', raw_edited_corpus[fn])\n",
+    "\n",
+    "clean_edited = {}\n",
+    "for fn in clean_edited_i:\n",
+    "    clean_edited[fn] = re.sub(r'[^آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهس ي یی ]', '', clean_edited_i[fn])\n",
+    "```"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#From General Hanley\n",
+    "\n",
+    "def clean_document(doc):\n",
+    "    doc = re.sub(r'ي', 'ی', doc)\n",
+    "    doc = re.sub(r'[^آابپتثجچحخدذرزژسشصضطظعغفقکگلمنوهس ي یی ]', ' ', doc)\n",
+    "    doc = re.sub(r'\\s+', ' ', doc)\n",
+    "    doc = re.sub(r'ك', 'ک', doc)\n",
+    "    doc = doc.strip()\n",
+    "    return doc"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Cleaning edited texts and notes"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'جنابعالیمولایم سلمه الله متعالی جناب مرحمت و شفقت پناهی وزارتپناه مهربانی پروانچی حفظه الباری دام دولته معروض بر ضمیر منیر مهر تنویر خجسته مظاهر سیرات تخمیر عالیجاه رفیع جایگاه امیر الامرا انتظام محیت و م دت ارتسام اعنی مستغنی عن تعریف و توصیف را بمعرض قبول چنین رسانیده میشود که الحمد و المنه مجاری احوال بکرم و دولت بخیر بوده سلامتی ذات اشراف همایونی آبرومندی مطلوب مستدعااست نهفته و خفی مباد که والا جاها چنانجه درینآوان خرم نشان و از برای غلطانیده آمده بدریا بوده تدمانها رمیه نوازش پرور ارسالداشته بوده در بهترین زمان آمده رسیده بمطالعه پیوسته از مضامین بلاغت آیین او خورسندی بحصول پیوسته گردید امیدگاها احوال اینخدمت کار بجنابشان کما ینبغی معلوم میباشد از بیگاه اینجانب یکرم آلهی اندک تب و فراشاط ناک شده در طبعیت در طبیعت چیزی لاحظ در طبیعت چیزی لاحظ پیدا شد از اینوجه بقاضی و املاکداران تومان خط کرده آدم خود را همراه روانه نمودم دیگر اینکه مهربان پناها مبارکنامه فقرایان بجنابشان منظور شده گیست بمثل آن یک مبارکنامه حکم عرض کرده گرفته طیاری نموده مانند بهتر است گفته از روی نادانی انمعنی صلاح می افتیده باشد گفته آگاهی نموده فرستادم دیگر از دولت عالی بخاطر جمعی بوده دعا آب را بفقرایان نوبت دار کما کان رسانیده بذاتعای دعا گرفته استاده ایم ازینوجه خدمتکارانشان خوب مذمت کرده استاده اند فقر همه وقت بدعا یار نیز از دعای مقرون الاجابت اولا ذاتعالی طفیلی امیدوارم السلام'"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Clean edited texts\n",
+    "\n",
+    "## TO DO: figure out more efficient way of doing the for loop, add in ک swaps too\n",
+    "\n",
+    "#Texts transcribed by other people\n",
+    "clean_edited = {fn: clean_document(doc) for fn, doc in trans_corpus.items()}\n",
+    "\n",
+    "#XML-stage texts\n",
+    "clean_xml = {fn: clean_document(doc) for fn, doc in xml_corpus.items()}\n",
+    "\n",
+    "#Raw Notes\n",
+    "clean_notes = {fn: clean_document(doc) for fn, doc in raw_notes_corpus.items()}\n",
+    "\n",
+    "#Markdown Notes\n",
+    "clean_markdown = {fn: clean_document(doc) for fn, doc in md_notes_corpus.items()}\n",
+    "\n",
+    "\n",
+    "#clean_edited['ikromcha'][:1000]\n",
+    "#clean_edited['ikromcha'][:1000]\n",
+    "\n",
+    "#clean_markdown['apsa_76']\n",
+    "\n",
+    "clean_xml['ser561']\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Cleaning XML documents"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 49,
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "KeyError",
+     "evalue": "'ser561'",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[0;31mKeyError\u001b[0m                                  Traceback (most recent call last)",
+      "\u001b[0;32m<ipython-input-49-fd602d8a5e55>\u001b[0m in \u001b[0;36m<module>\u001b[0;34m()\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mbstree\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mbs4\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mBeautifulSoup\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mclean_xml\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m\"ser561\"\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0;34m'lxml'\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      2\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      3\u001b[0m \u001b[0mprint\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mbstree\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_text\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      4\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n",
+      "\u001b[0;31mKeyError\u001b[0m: 'ser561'"
+     ]
+    }
+   ],
+   "source": [
+    "#QUESTION: Is this step even necessary?\n",
+    "\n",
+    "#bstree = bs4.BeautifulSoup(clean_xml[\"ser561\"], 'lxml')\n",
+    "\n",
+    "\n",
+    "#print(bstree.get_text())\n",
+    "\n",
+    "\n",
+    "## TO DO: still need to strip out some of the non-Arabic script stuff, like above.\n",
+    "\n",
+    "#clean_xml = {}\n",
+    "#for fn in raw_xml:\n",
+    "#    bstree = bs4.BeautifulSoup(raw_xml[fn], 'lxml')\n",
+    "#    clean_xml[fn] = bstree.get_text()\n",
+    "    \n",
+    "#clean_xml['TsGARUZ_i126_1_1986_1_ser201']\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Tokenizing"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "\n",
+    "edited_toks = {}\n",
+    "for (fn, txt) in clean_edited.items():\n",
+    "    toks = nltk.word_tokenize(txt)\n",
+    "    edited_toks[fn] = toks\n",
+    "\n",
+    "notes_toks = {}\n",
+    "for (fn, txt) in clean_notes.items():\n",
+    "    toks = nltk.word_tokenize(txt)\n",
+    "    notes_toks[fn] = toks\n",
+    "    \n",
+    "markdown_toks = {}\n",
+    "for (fn, txt) in clean_markdown.items():\n",
+    "    toks = nltk.word_tokenize(txt)\n",
+    "    notes_toks[fn] = toks\n",
+    "\n",
+    "\n",
+    "xml_toks = {}\n",
+    "for (fn, txt) in clean_xml.items():\n",
+    "    toks = nltk.word_tokenize(txt)\n",
+    "    xml_toks[fn] = toks\n",
+    "    \n",
+    "\n",
+    "#xml_toks['TsGARUz_R-2678_ser184'][50:70]\n",
+    "\n",
+    "#notes_toks[\"jung_i_mahzar_va_rivayat_al_biruni_9767\"]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Merging Corpuses"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#Merging dictionaries: https://www.webucator.com/how-to/how-merge-dictionaries-python.cfm\n",
+    "\n",
+    "\n",
+    "#Combined corpus\n",
+    "combined_corpus_toks = {**edited_toks, **notes_toks, **xml_toks, **markdown_toks}\n",
+    "\n",
+    "\n",
+    "#Combined Tokens (loses corpus text designation)\n",
+    "combined_toks = []\n",
+    "for (fn, text) in combined_corpus_toks.items():\n",
+    "    combined_toks.extend(combined_corpus_toks[fn])\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Persian Literature Digital Corpus\n",
+    "Massive corpus of Persian literature, pulled from Ganjur (http://ganjoor.net/) by Roshan (https://persdigumd.github.io/PDL/)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 99,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "348\n",
+      "loaded\n",
+      "cleaned\n",
+      "tokenized\n"
+     ]
+    }
+   ],
+   "source": [
+    "## ISSUE: A lot of the corpus is in Unicode format, some of it is in Arabic script. Is the unicode automatically converted?\n",
+    "\n",
+    "#Globbing\n",
+    "\n",
+    "files = glob.glob('/Users/Enkidu/Box Sync/Notes/Digital Humanities/Corpora/persian_literature_digital_corpus_roshan/data/**/*.xml', recursive=True)\n",
+    "print(len(files))\n",
+    "\n",
+    "#Assembling Corpus\n",
+    "\n",
+    "raw_perslit_corpus = {}\n",
+    "for longname in files:\n",
+    "        f = open(longname)\n",
+    "        txt = f.read()\n",
+    "        f.close()\n",
+    "        start = longname.rindex('/')+1\n",
+    "        short = longname[start:-4]\n",
+    "        raw_perslit_corpus[short] = txt\n",
+    "\n",
+    "print('loaded')\n",
+    "        \n",
+    "#Cleaning Text\n",
+    "## TO DO: still need to strip out some of the non-Arabic script stuff, like above.\n",
+    "\n",
+    "\n",
+    "clean_perslit = {}\n",
+    "for fn in raw_perslit_corpus:\n",
+    "    bstree = bs4.BeautifulSoup(raw_perslit_corpus[fn], 'lxml')\n",
+    "    clean_perslit[fn] = bstree.get_text()\n",
+    "\n",
+    "print('cleaned')\n",
+    "    \n",
+    "#Tokenizing Text\n",
+    " \n",
+    "perslit_toks = {}\n",
+    "for (fn, txt) in clean_perslit.items():\n",
+    "    toks = nltk.word_tokenize(txt)\n",
+    "    perslit_toks[fn] = toks\n",
+    "        \n",
+    "print('tokenized')\n",
+    "        \n",
+    "#clean_perslit['ferdousi.shahname.pdl'][5000:5800]\n",
+    "#perslit_toks['ferdousi.shahname.pdl'][50:70]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 98,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "12759548"
+      ]
+     },
+     "execution_count": 98,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "pd.Series([len(x) for x in perslit_toks.values()]).sum()\n",
+    "\n",
+    "# pandas read CSV;\n",
+    "corpus = pd.read_csv(filename, index_col='name')['text'].todict()\n",
+    "toks = {k: nltk.word_tokenize(c) for (k, c) in corpus.items()}"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Stats"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Word Frequency"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[('اشتغالداشته', 6),\n",
+       " ('جنابعالیحضرتم', 6),\n",
+       " ('اجمعینتیمنا', 5),\n",
+       " ('جنابعالیحضرت', 4),\n",
+       " ('جنابعالیمولایم', 4),\n",
+       " ('اشتغالنموده', 3),\n",
+       " ('میگذرانیدند', 2),\n",
+       " ('تورسونخواجه', 2),\n",
+       " ('بآنعالیحضرت', 2),\n",
+       " ('استقامتداشتند', 2)]"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#pah_freq = nltk.FreqDist(pah_toks_clean)\n",
+    "#pah_freq.most_common(20)\n",
+    "\n",
+    "combo_freq = nltk.FreqDist(combined_toks)\n",
+    "\n",
+    "\n",
+    "long_toks = [x for x in combined_toks if len(x)>10]\n",
+    "long_freq = nltk.FreqDist(long_toks)\n",
+    "long_freq.most_common(10)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Bigrams"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 55,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[(('بعد', 'از'), 1078),\n",
+       " (('و', 'از'), 748),\n",
+       " (('و', 'در'), 669),\n",
+       " (('اند', 'و'), 614),\n",
+       " (('قدس', 'سره'), 503),\n",
+       " (('است', 'و'), 458),\n",
+       " (('از', 'ان'), 391),\n",
+       " (('که', 'در'), 387),\n",
+       " (('را', 'از'), 377),\n",
+       " (('که', 'از'), 370)]"
+      ]
+     },
+     "execution_count": 55,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "bigrams = nltk.ngrams(combined_toks, 2)\n",
+    "bi_freq = nltk.FreqDist(bigrams)\n",
+    "bi_freq.most_common(10)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Trigrams"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 56,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[(('بعد', 'از', 'ان'), 192),\n",
+       " (('بوده', 'اند', 'و'), 124),\n",
+       " (('الله', 'علیه', 'و'), 105),\n",
+       " (('و', 'بعد', 'از'), 104),\n",
+       " (('علیه', 'و', 'سلم'), 103),\n",
+       " (('و', 'از', 'ایشان'), 86),\n",
+       " (('درین', 'مسله', 'که'), 82),\n",
+       " (('بشرایطه', 'یا', 'نی'), 81),\n",
+       " (('فرموده', 'اند', 'ه'), 80),\n",
+       " (('اند', 'و', 'در'), 72)]"
+      ]
+     },
+     "execution_count": 56,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "trigrams = nltk.ngrams(combined_toks, 3)\n",
+    "tri_freq = nltk.FreqDist(trigrams)\n",
+    "tri_freq.most_common(10)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Muchos-Grams"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 57,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "muchos_grams = nltk.ngrams(combined_toks, 10)\n",
+    "muchos_freq = nltk.FreqDist(muchos_grams)\n",
+    "#muchos_freq.most_common(5)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Conditional Frequency"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 116,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# ConditionalFreqDist() takes a list of pairs.\n",
+    "# Generator variable uses itself up upon assignment, so need to recreate above\n",
+    "\n",
+    "## TO DO: How to integrate Regex searches into this?\n",
+    "\n",
+    "bigrams_cfd = nltk.ngrams(combined_toks, 2)\n",
+    "\n",
+    "cfd = nltk.ConditionalFreqDist(bigrams_cfd)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 117,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[('اولیا', 2), ('صلو', 1), ('ل', 1), ('شرف', 1), ('مبار', 1)]"
+      ]
+     },
+     "execution_count": 117,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "cfd['خاتم'].most_common(5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 114,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "tri0 = nltk.ngrams(combined_toks, 3)\n",
+    "tri1 = [((a, b), c) for (a, b, c) in tri0]\n",
+    "cfd1 = nltk.ConditionalFreqDist(tri1)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 115,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "FreqDist({'ان': 200, 'آن': 67, 'چند': 44, 'وفات': 34, 'فراغ': 25, 'ختم': 25, 'فوت': 20, 'انکه': 18, 'نماز': 15, 'اتمام': 14, ...})"
+      ]
+     },
+     "execution_count": 115,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "cfd1[(\"بعد\",\"از\")]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 121,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "FreqDist({'در': 30, 'از': 12, 'هزار': 7, 'تب': 6, 'و': 6, 'آن': 5, 'اهل': 5, 'کتاب': 5, 'درس': 5, 'که': 4, ...})"
+      ]
+     },
+     "execution_count": 121,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "bi0 = nltk.ngrams(combined_toks, 2)\n",
+    "bir = [(b, a) for (a, b) in bi0]\n",
+    "cfdr = nltk.ConditionalFreqDist(bir)\n",
+    "\n",
+    "cfdr[\"خانه\"]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Concordance"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 129,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[ConcordanceLine(left=['از', 'همین', 'جهت', 'است', 'ه', 'احوال', 'و', 'اطوار', 'اینها', 'از', 'اطوار', 'س', 'ان', 'بدتر', 'است', 'ه', 'س', 'بیچاره', 'در'], query='خانه', right=['صاحب', 'خود', 'بخدمت', 'خود', 'من', 'الحراس', 'و', 'غیرها', 'مشغول', 'بوده', 'استیفا', 'حق', 'خودرا', 'از', 'ا', 'ستخوان', 'و', 'غیرها'], offset=3320, left_print='از اطوار س ان بدتر است ه س بیچاره در', right_print='صاحب خود بخدمت خود من الحراس و غیرها', line='از اطوار س ان بدتر است ه س بیچاره در خانه صاحب خود بخدمت خود من الحراس و غیرها'),\n",
+       " ConcordanceLine(left=['بخلاف', 'این', 'طایفه', 'ه', 'ب', 'زحمت', 'و', 'مخاصمت', 'و', 'مضاربه', 'و', 'مقاتله', 'غیر', 'به', 'حقوق', 'خودها', 'نمیرسند', 'و', 'در'], query='خانه', right=['خود', 'ازظلم', 'و', 'تعد', 'غیر', 'خلاص', 'ندارند', 'لما', 'ذ', 'رنا', 'ف', 'الخطب', 'و', 'از', 'همین', 'قسم', 'است', 'شراب'], offset=3365, left_print='قاتله غیر به حقوق خودها نمیرسند و در', right_print='خود ازظلم و تعد غیر خلاص ندارند لما ', line='قاتله غیر به حقوق خودها نمیرسند و در خانه خود ازظلم و تعد غیر خلاص ندارند لما '),\n",
+       " ConcordanceLine(left=['در', 'دیار', 'ما', 'به', 'پیش', 'ی', 'شخص', 'انواع', 'حلویات', 'و', 'مشروبات', 'و', 'اطعمه', 'چنان', 'جمع', 'می', 'نند', 'ه', 'در'], query='خانه', right=['جا', 'نشستن', 'باق', 'نم', 'ماند', 'و', 'اسراف', 'در', 'ملبوسات', 'نیز', 'بر', 'همین', 'قیاس', 'است', 'و', 'ازین', 'اسراف', 'ها'], offset=3914, left_print='مشروبات و اطعمه چنان جمع می نند ه در', right_print='جا نشستن باق نم ماند و اسراف در ملبو', line='مشروبات و اطعمه چنان جمع می نند ه در خانه جا نشستن باق نم ماند و اسراف در ملبو'),\n",
+       " ConcordanceLine(left=['ات', 'شنیدیم', 'ه', 'میگویند', 'ه', 'چرا', 'طالب', 'قضا', 'نشویم', 'ه', 'بخوردن', 'نان', 'و', 'به', 'پوشدن', 'جامه', 'و', 'به', 'نشستن'], query='خانه', right=['و', 'بخواندن', 'تاب', 'و', 'بخانه', 'بساط', 'در', 'بساط', 'خود', 'نداریم', 'جواب', 'او', 'لا', 'آن', 'است', 'ه', 'ال', 'الآن'], offset=5802, left_print='خوردن نان و به پوشدن جامه و به نشستن', right_print='و بخواندن تاب و بخانه بساط در بساط خ', line='خوردن نان و به پوشدن جامه و به نشستن خانه و بخواندن تاب و بخانه بساط در بساط خ'),\n",
+       " ConcordanceLine(left=['مبلغ', 'را', 'چ', 'ونه', 'جمع', 'مینما', 'یم', 'بل', 'ه', 'بایع', 'و', 'مشتر', 'اگرچه', 'به', 'بازار', 'نه', 'آید', 'و', 'به'], query='خانه', right=['خود', 'چیز', 'را', 'فروشد', 'مست', 'جر', 'بازار', 'مذ', 'ور', 'اجر', 'ال', 'یل', 'و', 'تحت', 'جای', 'گویان', 'مبلغ', 'ثیر'], offset=6807, left_print='یع و مشتر اگرچه به بازار نه آید و به', right_print='خود چیز را فروشد مست جر بازار مذ ور ', line='یع و مشتر اگرچه به بازار نه آید و به خانه خود چیز را فروشد مست جر بازار مذ ور '),\n",
+       " ConcordanceLine(left=['رحمت', 'او', 'بجایی', 'ه', 'رسیدن', 'آنجا', 'از', 'امثال', 'من', 'ب', 'بدرق', 'لطف', 'ربان', 'محال', 'محض', 'بود', 'بیت', 'ناوردم', 'از'], query='خانه', right=['چیز', 'نخست', 'تو', 'داد', 'همه', 'چیز', 'من', 'چیز', 'تست', 'و', 'این', 'بشارتهارا', 'بچندین', 'نفر', 'از', 'دوستان', 'صادق', 'و'], offset=10581, left_print=' لطف ربان محال محض بود بیت ناوردم از', right_print='چیز نخست تو داد همه چیز من چیز تست و', line=' لطف ربان محال محض بود بیت ناوردم از خانه چیز نخست تو داد همه چیز من چیز تست و'),\n",
+       " ConcordanceLine(left=['دیدم', 'ه', 'بالا', 'خان', 'خیرگاه', 'ه', 'پدر', 'ترا', 'بود', 'گشاده', 'شد', 'و', 'آن', 'اغذ', 'از', 'چنگ', 'گیرا', 'آن', 'بدرون'], query='خانه', right=['فرود', 'آمد', 'بشعاع', 'آن', 'خانه', 'و', 'اطراف', 'آن', 'روشن', 'شد', 'درینحال', 'بیدار', 'شدم', 'چون', 'روز', 'شد', 'بخان', 'پدر'], offset=10802, left_print='اده شد و آن اغذ از چنگ گیرا آن بدرون', right_print='فرود آمد بشعاع آن خانه و اطراف آن رو', line='اده شد و آن اغذ از چنگ گیرا آن بدرون خانه فرود آمد بشعاع آن خانه و اطراف آن رو'),\n",
+       " ConcordanceLine(left=['ه', 'پدر', 'ترا', 'بود', 'گشاده', 'شد', 'و', 'آن', 'اغذ', 'از', 'چنگ', 'گیرا', 'آن', 'بدرون', 'خانه', 'فرود', 'آمد', 'بشعاع', 'آن'], query='خانه', right=['و', 'اطراف', 'آن', 'روشن', 'شد', 'درینحال', 'بیدار', 'شدم', 'چون', 'روز', 'شد', 'بخان', 'پدر', 'تو', 'آمدم', 'ه', 'خواب', 'شب'], offset=10807, left_print='گیرا آن بدرون خانه فرود آمد بشعاع آن', right_print='و اطراف آن روشن شد درینحال بیدار شدم', line='گیرا آن بدرون خانه فرود آمد بشعاع آن خانه و اطراف آن روشن شد درینحال بیدار شدم'),\n",
+       " ConcordanceLine(left=['بیدار', 'شدم', 'چون', 'روز', 'شد', 'بخان', 'پدر', 'تو', 'آمدم', 'ه', 'خواب', 'شب', 'را', 'با', 'پدر', 'گویم', 'چون', 'رسیدم', 'اهل'], query='خانه', right=['همه', 'خرسندیها', 'داشتند', 'س', 'از', 'من', 'سیونچ', 'گرفت', 'ه', 'امشب', 'خدا', 'تعال', 'فلان', 'را', 'پسر', 'رامت', 'فرمود', 'من'], offset=10833, left_print='خواب شب را با پدر گویم چون رسیدم اهل', right_print='همه خرسندیها داشتند س از من سیونچ گر', line='خواب شب را با پدر گویم چون رسیدم اهل خانه همه خرسندیها داشتند س از من سیونچ گر'),\n",
+       " ConcordanceLine(left=['مهر', 'پدر', 'خداوند', 'تعال', 'بیامرزادش', 'ب', 'اختیار', 'ناله', 'چون', 'ن', 'ازنا', 'گلو', 'این', 'مینه', 'بلند', 'گردید', 'چون', 'م', 'تب'], query='خانه', right=['بوثاق', 'والدین', 'نزدی', 'بود', 'از', 'استماع', 'ناله', 'ام', 'آتش', 'بخرمن', 'صبرشان', 'در', 'افتاد', 'لجامعه', 'بیت', 'نیش', 'خاری', 'ه'], offset=12940, left_print='زنا گلو این مینه بلند گردید چون م تب', right_print='بوثاق والدین نزدی بود از استماع ناله', line='زنا گلو این مینه بلند گردید چون م تب خانه بوثاق والدین نزدی بود از استماع ناله'),\n",
+       " ConcordanceLine(left=['زخمها', 'می', 'ند', 'بجان', 'پدر', 'سوزن', 'ان', 'بپا', 'دختر', 'شد', 'رشت', 'نالها', 'مادر', 'شد', 'هر', 'دو', 'بسو', 'م', 'تب'], query='خانه', right=['دویدند', 'و', 'بپا', 'شفاعت', 'از', 'دست', 'آخوند', 'خلاصم', 'ردند', 'چون', 'شعل', 'قهر', 'آخوند', 'بآب', 'لطف', 'پدرم', 'فرو', 'نشست'], offset=12981, left_print=' شد رشت نالها مادر شد هر دو بسو م تب', right_print='دویدند و بپا شفاعت از دست آخوند خلاص', line=' شد رشت نالها مادر شد هر دو بسو م تب خانه دویدند و بپا شفاعت از دست آخوند خلاص'),\n",
+       " ConcordanceLine(left=['همین', 'یام', 'معدوده', 'بود', 'و', 'ریاضت', 'ه', 'از', 'جهت', 'مراد', 'بدست', 'درآوردن', 'دیدم', 'همین', 'هنگام', 'معلوم', 'آغاز', 'م', 'تب'], query='خانه', right=['رفتنم', 'والله', 'اعلم', 'ماه', 'میزان', 'بود', 'ه', 'رسم', 'اترا', 'است', 'در', 'طفل', 'بم', 'تب', 'دادن', 'چرا', 'ه', 'موسم'], offset=13293, left_print='وردن دیدم همین هنگام معلوم آغاز م تب', right_print='رفتنم والله اعلم ماه میزان بود ه رسم', line='وردن دیدم همین هنگام معلوم آغاز م تب خانه رفتنم والله اعلم ماه میزان بود ه رسم'),\n",
+       " ConcordanceLine(left=['ارادت', 'ه', 'داشتم', 'هرچند', 'فرزند', 'وارم', 'م', 'نواختند', 'غلام', 'آسا', 'خذمتشانرا', 'بجان', 'دل', 'بجا', 'م', 'آوردم', 'تمام', 'خذمت', 'در'], query='خانه', right=['را', 'بشوق', 'تمام', 'آماده', 'میداشتم', 'آستان', 'روب', 'و', 'سایس', 'و', 'فراش', 'همه', 'از', 'من', 'بود', 'گاها', 'خطاب', 'بر'], offset=21499, left_print='نرا بجان دل بجا م آوردم تمام خذمت در', right_print='را بشوق تمام آماده میداشتم آستان روب', line='نرا بجان دل بجا م آوردم تمام خذمت در خانه را بشوق تمام آماده میداشتم آستان روب'),\n",
+       " ConcordanceLine(left=['عزیز', 'بودیم', 'غیر', 'از', 'نمد', 'پار', 'فرسوده', 'و', 'بوریا', 'فرتوت', 'و', 'وز', 'ش', 'سته', 'و', 'اس', 'سفالین', 'از', 'اسباب'], query='خانه', right=['چیز', 'در', 'آن', 'حجره', 'نبود', 'اما', 'مهمان', 'داریرا', 'بر', 'وجه', 'مال', 'مترتب', 'داشته', 'با', 'سه', 'نفر', 'طلب', 'علم'], offset=25546, left_print='رتوت و وز ش سته و اس سفالین از اسباب', right_print='چیز در آن حجره نبود اما مهمان داریرا', line='رتوت و وز ش سته و اس سفالین از اسباب خانه چیز در آن حجره نبود اما مهمان داریرا'),\n",
+       " ConcordanceLine(left=['میل', 'حال', 'در', 'بخارا', 'بر', 'وجه', 'اتم', 'اورا', 'میسر', 'شد', 'بسع', 'پدر', 'بل', 'ه', 'بتقضا', 'قدر', 'باورگوت', 'آمده', 'از'], query='خانه', right=['دان', 'اصالت', 'نشراوان', 'آنولایت', 'تاهل', 'واقع', 'گردید', 'فرزندان', 'از', 'بنات', 'و', 'بنین', 'متولد', 'گردیدند', 'ما', 'بق', 'حیات', 'را'], offset=26160, left_print='ع پدر بل ه بتقضا قدر باورگوت آمده از', right_print='دان اصالت نشراوان آنولایت تاهل واقع ', line='ع پدر بل ه بتقضا قدر باورگوت آمده از خانه دان اصالت نشراوان آنولایت تاهل واقع '),\n",
+       " ConcordanceLine(left=['جناب', 'حضرت', 'قطب', 'چهاردهم', 'یعن', 'حضرت', 'ایشان', 'ابو', 'محمد', 'تورسونخواجه', 'میباشند', 'غفر', 'الله', 'تعال', 'ذنوبهم', 'و', 'ستر', 'عیوبهم', 'بیت'], query='خانه', right=['دان', 'پا', 'شان', 'از', 'فیض', 'دین', 'معمور', 'باد', 'چشم', 'بد', 'از', 'قربت', 'این', 'نی', 'بختان', 'دور', 'باد', 'چنانچه'], offset=27438, left_print='فر الله تعال ذنوبهم و ستر عیوبهم بیت', right_print='دان پا شان از فیض دین معمور باد چشم ', line='فر الله تعال ذنوبهم و ستر عیوبهم بیت خانه دان پا شان از فیض دین معمور باد چشم '),\n",
+       " ConcordanceLine(left=['هر', 'حسب', 'را', 'مقطع', 'است', 'هر', 'ه', 'را', 'ریختن', 'هر', 'ریشته', 'را', 'پیچتاب', 'این', 'دو', 'خصلت', 'از', 'خواص', 'مصتفاست'], query='خانه', right=['دان', 'پا', 'او', 'باق', 'ست', 'تا', 'روز', 'حساب', 'جزو', 'عادل', 'امیر', 'الم', 'منین', 'ظل', 'اله', 'آن', 'زمین', 'قطب'], offset=31668, left_print='ا پیچتاب این دو خصلت از خواص مصتفاست', right_print='دان پا او باق ست تا روز حساب جزو عاد', line='ا پیچتاب این دو خصلت از خواص مصتفاست خانه دان پا او باق ست تا روز حساب جزو عاد'),\n",
+       " ConcordanceLine(left=['خار', 'وجود', 'اغیار', 'پا', 'یزه', 'نمود', 'اما', 'زمانه', 'بزبان', 'حال', 'مترنم', 'اینمقال', 'بود', 'ه', 'بیت', 'خواجه', 'دربند', 'قصر', 'ایوانست'], query='خانه', right=['از', 'سخت', 'ار', 'ویرانست', 'چون', 'محمد', 'امین', 'ب', 'بحصار', 'بوطن', 'خود', 'آمد', 'و', 'افراط', 'خون', 'ریز', 'و', 'آدم'], offset=33515, left_print='ال بود ه بیت خواجه دربند قصر ایوانست', right_print='از سخت ار ویرانست چون محمد امین ب بح', line='ال بود ه بیت خواجه دربند قصر ایوانست خانه از سخت ار ویرانست چون محمد امین ب بح'),\n",
+       " ConcordanceLine(left=['ایران', 'و', 'توران', 'قحط', 'و', 'ارزان', 'و', 'خراب', 'و', 'آبادان', 'به', 'نهایت', 'رسیده', 'بود', 'و', 'اهال', 'آن', 'دیار', 'در'], query='خانه', right=['بعذاب', 'ناسیر', 'و', 'در', 'صحراها', 'ببلا', 'اسیر', 'مبتلا', 'بودند', 'ریمه', 'و', 'ض', 'ر', 'ب', 'الل', 'ه', 'م', 'ث'], offset=43623, left_print='به نهایت رسیده بود و اهال آن دیار در', right_print='بعذاب ناسیر و در صحراها ببلا اسیر مب', line='به نهایت رسیده بود و اهال آن دیار در خانه بعذاب ناسیر و در صحراها ببلا اسیر مب'),\n",
+       " ConcordanceLine(left=['گفته', 'و', 'بجارچ', 'جار', 'فرمود', 'ه', 'لش', 'ر', 'بزور', 'و', 'زود', 'سوار', 'شوند', 'بمقدار', 'پانصد', 'نفر', 'از', 'حضار', 'در'], query='خانه', right=['اش', 'سوار', 'نموده', 'زبان', 'حال', 'آنفرعون', 'خیال', 'بمضمون', 'اینمقال', 'صدق', 'مآل', 'ناطق', 'بود', 'ه', 'ن', 'ه', 'ل', 'ا'], offset=44234, left_print='وار شوند بمقدار پانصد نفر از حضار در', right_print='اش سوار نموده زبان حال آنفرعون خیال ', line='وار شوند بمقدار پانصد نفر از حضار در خانه اش سوار نموده زبان حال آنفرعون خیال '),\n",
+       " ConcordanceLine(left=['و', 'ز', 'ر', 'وع', 'و', 'م', 'ق', 'ام', 'ر', 'یم', 'الآیه', 'درآنوقت', 'ظاهر', 'شد', 'گویند', 'قریب', 'به', 'بیست', 'هزار'], query='خانه', right=['وار', 'کم', 'یا', 'بیش', 'از', 'سکین', 'مرو', 'درآن', 'قضیه', 'از', 'جیحون', 'عبور', 'نموده', 'ببخارا', 'و', 'اطراف', 'آن', 'و'], offset=46660, left_print='نوقت ظاهر شد گویند قریب به بیست هزار', right_print='وار کم یا بیش از سکین مرو درآن قضیه ', line='نوقت ظاهر شد گویند قریب به بیست هزار خانه وار کم یا بیش از سکین مرو درآن قضیه '),\n",
+       " ConcordanceLine(left=['چون', 'عروس', 'تنگ', 'در', 'آغوش', 'محاصره', 'گرفتند', 'حاکم', 'او', 'بیکمراد', 'بی', 'ولد', 'خدایار', 'بی', 'چون', 'دانست', 'که', 'از', 'عهد'], query='خانه', right=['داری', 'نمیبراید', 'ناچار', 'از', 'در', 'تملق', 'درآمده', 'زنجیر', 'صلح', 'بدست', 'انقیاد', 'جنبانیده', 'علما', 'عظام', 'آندیار', 'را', 'بشفاعت', 'برکاب'], offset=50822, left_print='بی ولد خدایار بی چون دانست که از عهد', right_print='داری نمیبراید ناچار از در تملق درآمد', line='بی ولد خدایار بی چون دانست که از عهد خانه داری نمیبراید ناچار از در تملق درآمد'),\n",
+       " ConcordanceLine(left=['ضمیم', 'آنقوم', 'آمده', 'ترک', 'اوطان', 'و', 'اختیار', 'جلا', 'طوعا', 'و', 'کرها', 'نیز', 'نمودند', 'در', 'آنواقعه', 'تقریبا', 'سه', 'چهار', 'هزار'], query='خانه', right=['وار', 'سوا', 'اهل', 'فرار', 'داخل', 'قلمرو', 'معموره', 'گردید', 'و', 'شهر', 'ثمرقند', 'که', 'از', 'زمان', 'رجب', 'خان', 'تا', 'این'], offset=51309, left_print='مودند در آنواقعه تقریبا سه چهار هزار', right_print='وار سوا اهل فرار داخل قلمرو معموره گ', line='مودند در آنواقعه تقریبا سه چهار هزار خانه وار سوا اهل فرار داخل قلمرو معموره گ'),\n",
+       " ConcordanceLine(left=['متوجه', 'بالای', 'حصار', 'گردید', 'چون', 'بدرواز', 'ارک', 'رسیدند', 'آنرا', 'مانند', 'در', 'بخت', 'خود', 'بر', 'بسته', 'یافت', 'از', 'بالای', 'نقاره'], query='خانه', right=['هواخواهان', 'سعیدی', 'آن', 'شقی', 'را', 'به', 'تیر', 'و', 'سنگ', 'زده', 'گردانیدند', 'ساعتی', 'سعی', 'و', 'تردد', 'نمود', 'بجا', 'ی'], offset=55904, left_print=' بخت خود بر بسته یافت از بالای نقاره', right_print='هواخواهان سعیدی آن شقی را به تیر و س', line=' بخت خود بر بسته یافت از بالای نقاره خانه هواخواهان سعیدی آن شقی را به تیر و س'),\n",
+       " ConcordanceLine(left=['شهررا', 'جمع', 'نموده', 'هر', 'جاکه', 'آتش', 'فتنه', 'سر', 'میکشید', 'بآب', 'تدبیر', 'از', 'پا', 'می', 'نشانده', 'فقرای', 'شهررا', 'فرمود', 'که'], query='خانه', right=['های', 'عمر', 'قوشبیگی', 'و', 'همدستانش', 'را', 'یغما', 'و', 'تاراج', 'نمایند', 'باندک', 'فرصت', 'رنود', 'و', 'ایتام', 'امتثال', 'فرمان', 'قاضی'], offset=55984, left_print='از پا می نشانده فقرای شهررا فرمود که', right_print='های عمر قوشبیگی و همدستانش را یغما و', line='از پا می نشانده فقرای شهررا فرمود که خانه های عمر قوشبیگی و همدستانش را یغما و')]"
+      ]
+     },
+     "execution_count": 129,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "trans_corpus.concordance_list('خانه')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Displaying 25 of 25 matches:\n",
+      " از اطوار س ان بدتر است ه س بیچاره در خانه صاحب خود بخدمت خود من الحراس و غیرها \n",
+      "مقاتله غیر به حقوق خودها نمیرسند و در خانه خود ازظلم و تعد غیر خلاص ندارند لما ذ\n",
+      " مشروبات و اطعمه چنان جمع می نند ه در خانه جا نشستن باق نم ماند و اسراف در ملبوس\n",
+      "بخوردن نان و به پوشدن جامه و به نشستن خانه و بخواندن تاب و بخانه بساط در بساط خو\n",
+      "ایع و مشتر اگرچه به بازار نه آید و به خانه خود چیز را فروشد مست جر بازار مذ ور ا\n",
+      "ق لطف ربان محال محض بود بیت ناوردم از خانه چیز نخست تو داد همه چیز من چیز تست و \n",
+      "شاده شد و آن اغذ از چنگ گیرا آن بدرون خانه فرود آمد بشعاع آن خانه و اطراف آن روش\n",
+      " گیرا آن بدرون خانه فرود آمد بشعاع آن خانه و اطراف آن روشن شد درینحال بیدار شدم \n",
+      " خواب شب را با پدر گویم چون رسیدم اهل خانه همه خرسندیها داشتند س از من سیونچ گرف\n",
+      "ازنا گلو این مینه بلند گردید چون م تب خانه بوثاق والدین نزدی بود از استماع ناله \n",
+      "ر شد رشت نالها مادر شد هر دو بسو م تب خانه دویدند و بپا شفاعت از دست آخوند خلاصم\n",
+      "آوردن دیدم همین هنگام معلوم آغاز م تب خانه رفتنم والله اعلم ماه میزان بود ه رسم \n",
+      "انرا بجان دل بجا م آوردم تمام خذمت در خانه را بشوق تمام آماده میداشتم آستان روب \n",
+      "فرتوت و وز ش سته و اس سفالین از اسباب خانه چیز در آن حجره نبود اما مهمان داریرا \n",
+      "سع پدر بل ه بتقضا قدر باورگوت آمده از خانه دان اصالت نشراوان آنولایت تاهل واقع گ\n",
+      "غفر الله تعال ذنوبهم و ستر عیوبهم بیت خانه دان پا شان از فیض دین معمور باد چشم ب\n",
+      "را پیچتاب این دو خصلت از خواص مصتفاست خانه دان پا او باق ست تا روز حساب جزو عادل\n",
+      "قال بود ه بیت خواجه دربند قصر ایوانست خانه از سخت ار ویرانست چون محمد امین ب بحص\n",
+      " به نهایت رسیده بود و اهال آن دیار در خانه بعذاب ناسیر و در صحراها ببلا اسیر مبت\n",
+      "سوار شوند بمقدار پانصد نفر از حضار در خانه اش سوار نموده زبان حال آنفرعون خیال ب\n",
+      "آنوقت ظاهر شد گویند قریب به بیست هزار خانه وار کم یا بیش از سکین مرو درآن قضیه ا\n",
+      " بی ولد خدایار بی چون دانست که از عهد خانه داری نمیبراید ناچار از در تملق درآمده\n",
+      "نمودند در آنواقعه تقریبا سه چهار هزار خانه وار سوا اهل فرار داخل قلمرو معموره گر\n",
+      "ر بخت خود بر بسته یافت از بالای نقاره خانه هواخواهان سعیدی آن شقی را به تیر و سن\n",
+      " از پا می نشانده فقرای شهررا فرمود که خانه های عمر قوشبیگی و همدستانش را یغما و \n"
+     ]
+    }
+   ],
+   "source": [
+    "# for whatever reason you can't just use the concordance method on a string;\n",
+    "# you have to convert it to an NLTK Text type one way or another\n",
+    "\n",
+    "trans_corpus = nltk.Text(combined_toks)\n",
+    "\n",
+    "trans_corpus.concordance('خانه')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "ودی آن مرغ را بپویم و از برای خود از خزانه لطف آفریده کار دولتی بسیاری بجویم ات\n",
+      " و مسایل فرعی ه را چون سوره فاتحه در خزانه حافظه محفوظ نموده و اغلب اشعار متقدم\n",
+      "ایشان نی نشینند خلاف شرع لازم می آید خزانه الروایات عبد الحفظ الغفور الحکیم الف\n",
+      " هزار تومان می شد به صیغه ی انعام از خزانه ی خود تسلیم و معذرت بسیار خواسته در \n",
+      " مینا تابیده که هرگاه گنج دقیانوسی و خزانه های کیکاووسی ظاهر می شد از عهده ی آن\n",
+      "خلا بدله ان یتلمذ الفتو حت یهتد الیه خزانه الفتاو فرتضها مهم ه چون کودک بسیار گ\n",
+      "حمد دیناری شرح خراج حیره الفقه عوارف خزانه الفقه مرآت العلوم آداب المفتی ملتقط \n",
+      "سته بفت و ی علما هر روز چهار تنگه از خزانه عام ر ه و بیت المال برای خود و اهل ع\n",
+      "یده و لو لی للاجنبی و لو صلح رو علیه خزانه المفسین فی کتاب الوقف فی کتاب الشرب \n",
+      " و یجب ان یذکر مکانه عند القضا مختصر خزانه اواخر فصل فیه یجوز قضا القاضی من کتا\n",
+      " ذ ر جواد ریم ثیر الوداد لا یتر زیار خوانه و له رامات ظاهر ما رآه امر حبه نهار \n"
+     ]
+    }
+   ],
+   "source": [
+    "toks = [x for x in combo_freq if re.match(r'خ.انه', x)]\n",
+    "conc0 = sum([trans_corpus.concordance_list(x) for x in toks], [])\n",
+    "conc1 = [c.line for c in conc0]\n",
+    "print('\\n'.join(conc1))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "['خزانه', 'خوانه']"
+      ]
+     },
+     "execution_count": 34,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "toks"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "34088"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "len(combo_freq)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
