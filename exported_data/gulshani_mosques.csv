@@ -1,8 +1,12 @@
-,Loc_ID,Type,Value,Entry_UID_x,Lat_Y,Long_X,Nickname,Fullname,Entry_UID_y
-0,3,sufi_lodges_contained,17,42,39.77691,64.41315,Bukhara,Bukhāra (city),9001
-1,47,sufi_lodges_contained,8,102,39.502778,63.85555600000001,Qarakol,QarākūlQorako‘l,313
-2,48,sufi_lodges_contained,12,3301,40.033333,64.516667,Wabkand,WābkandKāmāt,314
-3,49,sufi_lodges_contained,8,3311,40.05,64.53333,Pirmast,Pīrmast,1738
-4,51,sufi_lodges_contained,12,3317,39.933333000000005,64.383333,Ramitan,RāmītanSāmjan,1740
-5,50,sufi_lodges_contained,9,3321,40.116667,64.5,Shafirkam,ShāfirkāmWardānzahShāpūrkām,1739
-6,409,sufi_lodges_contained,12,3326,40.084444,65.37916700000001,Karmina,Karmina (Province),3327
+,Loc_ID,Type,Value,Entry_UID_x,Lat_Y,Long_X,Nickname,Entry_UID_y
+0,3,mosques,391,5000,39.77691,64.41315,Bukhara,9001
+1,46,mosques,715,5002,40.1,64.666667,Ghijduwan,311
+2,50,mosques,145,5004,40.116667,64.5,Shafirkam,1739
+3,47,mosques,418,103,39.502778,63.85555600000001,Qarakol,313
+4,49,mosques,180,3312,40.05,64.53333,Pirmast,1738
+5,51,mosques,244,3318,39.933333000000005,64.383333,Ramitan,1740
+6,409,mosques,488,3328,40.084444,65.37916700000001,Karmina,3327
+7,157,mosques,5,3333,39.83889,65.50444,Qarnab,3330
+8,111,mosques,24,3336,38.99864,66.73456,Yangi Qurghan,3334
+9,57,mosques,407,3339,40.034167,65.65472199999999,Ziya al-Din,338
+10,21,mosques,340,3345,40.025278,65.960833,Khatarchi,309
