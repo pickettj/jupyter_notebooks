@@ -8,7 +8,7 @@ Useful links:
 - Web scraping:
   - Mat Lavin [slides](https://docs.google.com/presentation/d/1JnMZbl7434RrzAHluKOT4OyUxCpln3B_7QYoSa01X0M/edit#slide=id.p) & [repo](https://github.com/mjlavin80/advanced-webscraping-pitt-february-2020)
   - [Method for mapping website lacking an index](https://www.freecodecamp.org/news/how-to-build-a-url-crawler-to-map-a-website-using-python-6a287be1da11/)
-- [Online Jupyter Notebooks for teaching purposes]|(https://github.com/iamlemec/data_science)
+- [Online Jupyter Notebooks for teaching purposes](https://github.com/iamlemec/data_science)
 
 Python3.8 is necessary for a number of new functions (notably the walrus operator), but it's a bit of a challenge to get it working with Jupyter:
 
