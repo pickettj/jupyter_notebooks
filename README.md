@@ -4,6 +4,7 @@ Testing out various Python routines.
 
 Useful links:
 
+- [Guide to Pandas for Humanists](https://pandas.pythonhumanities.com/intro.html).
 - [Binder](https://mybinder.org/): Free site for using Git to host Jupyter notebooks for outside users (i.e. great for demoing).
 - Web scraping:
   - Mat Lavin [slides](https://docs.google.com/presentation/d/1JnMZbl7434RrzAHluKOT4OyUxCpln3B_7QYoSa01X0M/edit#slide=id.p) & [repo](https://github.com/mjlavin80/advanced-webscraping-pitt-february-2020)
